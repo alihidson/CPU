@@ -1,7 +1,7 @@
 module regfile (
     input clk, write,
     input [4:0] rdaddr1,
-    input [4:0] rdaddr2,5
+    input [4:0] rdaddr2,
     input [4:0] wraddr,
     input [31:0] wrdata,
     output reg [31:0] rddata1,
@@ -16,8 +16,8 @@ always @(posedge clk) begin
 end
 
 always @* begin
-    rddata1 <= regfile[rdaddr1]; // transition rdaddr1 to rddata1
-    rddata2 <= regfile[rdaddr2]; // transition rdaddr2 to rddata2
+    rddata1 = regfile[rdaddr1]; // transition rdaddr1 to rddata1
+    rddata2 = regfile[rdaddr2]; // transition rdaddr2 to rddata2
 end
 
 endmodule

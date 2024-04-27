@@ -11,7 +11,7 @@ reg [7:0] mem [0:1023];
 
 always @(posedge clk) begin
     if (write && !read) begin
-        mem[addr] <= wrdata[7:0];
+        mem[addr] <= wrdata[7:0];           
         mem[addr+1] <= wrdata[15:8];
         mem[addr+2] <= wrdata[23:16];
         mem[addr+3] <= wrdata[31:24];
@@ -26,7 +26,7 @@ always @(*) begin
         rddata[23:16] <= mem[addr+2];
         rddata[31:24] <= mem[addr+3];
     end
-    else begin
+    else if((read && write) || (!read && !write)) begin
         rddata <= 32'b0;
     end
 end

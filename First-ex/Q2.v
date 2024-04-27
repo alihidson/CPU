@@ -1,5 +1,5 @@
 module alu (
-    input control,
+    input [3:0] control,
     input [31:0] a, b,
     output reg [31:0] c,
     output reg zero
