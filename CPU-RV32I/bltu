@@ -1,0 +1,89 @@
+module register (input clk, rst, input [31:0] d, output reg [31:0] q);
+ always @(posedge clk, posedge rst) begin
+  if (rst) q = 32'd0;
+  else begin
+   q = d;
+  end
+ end
+endmodule
+
+
+module alu(input [3:0] control, input [31:0] a, input [31:0] b, output reg [31:0] c, output reg zero);
+
+  always @(control,a,b)
+  begin
+    case (control)
+      4'b0000:	begin
+        	c = a & b;
+            	end   // AND
+
+
+      4'b0001:	begin
+        	c = a | b;
+            	end       // OR
+
+
+      4'b0010:	begin
+        	c = a + b;
+            	end       // ADD
+
+
+      4'b0011:	begin
+        	c = a ^ b;
+            	end       // XOR
+
+
+      4'b0100:	begin
+        	c = a << b;
+            	end     // SLL
+
+
+      4'b0101:	begin
+        	c = a >> b;
+            	end      // SRL
+
+
+      4'b0110:	begin
+        	c = a - b;
+            	end       // Subtract
+
+
+      4'b0111:	begin
+        	c = $signed(a) >>> b;
+            	end // SRA
+
+
+      default:	begin
+        	c = 0;
+            	end          
+    endcase
+    
+    zero = (c == 0) ? 1 : 0;    // Set zero output based on c value
+  end
+
+endmodule
+
+
+
+module sc  (input clk, rst);
+
+ wire [31:0] pcOut, ins, aluOut, aluIn1, aluIn2, imm;
+
+ wire [3:0] alucontrol;
+
+ register pc (clk, rst, pcOut+4, pcOut);
+ 
+ mem im (clk, 1'b0, 1'b1, pcOut[9:0], 32'd0, ins);
+ 
+ regfile rf (clk, 1'b1, ins[19:15], ins[24:20], ins[11:7], aluOut, aluIn1, aluIn2);
+ 
+ alu ALU (alucontrol, aluIn1, aluIn2, aluOut);
+ 
+ assign alucontrol = (
+
+  ins[14:12] == 3'b111 ? 4'd0 :
+  ins[14:12] == 3'b110 ? 4'd1 :
+  ins[14:12] == 3'b100 ? 4'd3 :
+  4'd4);
+ 
+endmodule
