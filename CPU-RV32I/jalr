@@ -53,6 +53,10 @@ module alu(input [3:0] control, input [31:0] a, input [31:0] b, output reg [31:0
         	c = $signed(a) >>> b;
             	end // SRA
 
+    4'b1000:	begin
+        	c = (a + b) & 32'hFFFFFFFE;
+            	end
+                   
 
       default:	begin
         	c = 0;
@@ -63,6 +67,7 @@ module alu(input [3:0] control, input [31:0] a, input [31:0] b, output reg [31:0
   end
 
 endmodule
+
 
 
 
@@ -85,22 +90,23 @@ endmodule
 
 
 module sc (input clk, rst);
-    wire [31:0] pcOut, ins, aluOut, aluIn1, aluIn2, imm, readData;
-    wire [3:0] alucontrol;
+  wire [31:0] pcOut, ins, aluOut, aluIn1, aluIn2, imm, readData, pcNext;
+  wire [3:0] alucontrol;
+  
+  register pc(clk, rst, pcNext, pcOut);
 
-    register pc (clk, rst, pcOut+4, pcOut);
+  mem im(clk, 1'b0, 1'b1, pcOut[9:0], 32'd0, ins);
+  mem dm(clk, 1'b0, 1'b1, aluOut[9:0], 32'd0, readData);
 
-    mem im (clk, 1'b0, 1'b1, pcOut[9:0], 32'd0, ins);
-    mem dm (clk, 1'b0, 1'b1, aluOut[9:0], 32'd0, readData);
+  regfile rf(clk, 1'b1, ins[19:15], ins[24:20], ins[11:7], readData, aluIn1);
 
-    regfile rf (clk, 1'b1, ins[19:15], ins[24:20], ins[11:7], readData, aluIn1,);
-   
-    signextend #(12) sign(ins[31:20], imm);
+  signextend #(12) sign(ins[31:20], imm);
 
-    alu ALU (alucontrol, aluIn1, imm, aluOut);
+  alu ALU(alucontrol, aluIn1, imm, aluOut);
 
-    assign alucontrol = 4'b0010;  // lw instruction
+  assign alucontrol = 4'b1000;  // jalr instruction
+  
+  assign pcNext = (ins[6:0] == 7'b1100111) ? aluOut : (pcOut + 4); // Calculate next PC value
+
 endmodule
-
-
 
